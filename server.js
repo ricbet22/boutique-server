@@ -45,9 +45,9 @@ app.post("/create-payment", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "PAYDUNYA-MASTER-KEY": "TON_MASTER_KEY",
-          "PAYDUNYA-PRIVATE-KEY": "TON_PRIVATE_KEY",
-          "PAYDUNYA-TOKEN": "TON_TOKEN"
+          "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
+          "PAYDUNYA-PRIVATE-KEY": "test_private_MspMDfUtSsvO54UVz8H7NO90VR9",
+          "PAYDUNYA-TOKEN": "DTip2Kv4kRy9rtBpi7Bz"
         },
         body: JSON.stringify({
           invoice: {
