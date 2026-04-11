@@ -1,11 +1,12 @@
 const express = require("express");
-const fetch = require("node-fetch");
 const cors = require("cors");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+const fetch = global.fetch;
 
 /* HOME */
 app.get("/", (req, res) => {
@@ -30,6 +31,7 @@ app.post("/create-payment", async (req, res) => {
         headers: {
           "Content-Type": "application/json",
 
+          // 🔐 TES NOUVELLES CLÉS (APRÈS RESET)
           "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
           "PAYDUNYA-PRIVATE-KEY": "live_private_v5yajGIXmycMXPcInGW74WZJODD",
           "PAYDUNYA-TOKEN": "cghAMMjHpWPltNO7TlOZ"
@@ -52,19 +54,16 @@ app.post("/create-payment", async (req, res) => {
 
     const data = await response.json();
 
-    console.log("PAYDUNYA RESPONSE:", data);
-
     const url =
       data?.response_body?.invoice_url ||
       data?.response_body?.redirect_url ||
       data?.response_body?.url ||
-      data?.response_text ||
       null;
 
     if (!url) {
       return res.json({
         success: false,
-        message: "Lien paiement introuvable",
+        message: "Lien introuvable",
         debug: data
       });
     }
@@ -85,18 +84,12 @@ app.post("/create-payment", async (req, res) => {
 
 /* SUCCESS */
 app.get("/success", (req, res) => {
-  res.send(`
-    <h1 style="color:green;">✅ Paiement réussi</h1>
-    <a href="/">Retour site</a>
-  `);
+  res.send("Paiement réussi ✅");
 });
 
 /* CANCEL */
 app.get("/cancel", (req, res) => {
-  res.send(`
-    <h1 style="color:red;">❌ Paiement annulé</h1>
-    <a href="/">Retour</a>
-  `);
+  res.send("Paiement annulé ❌");
 });
 
 /* START */
