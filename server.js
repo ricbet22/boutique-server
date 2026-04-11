@@ -1,53 +1,38 @@
 const express = require("express");
 const fetch = require("node-fetch");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors());
 app.use(express.json());
 
-/* =========================
-   HOME
-========================= */
+/* HOME */
 app.get("/", (req, res) => {
-  res.send("Serveur PayDunya en ligne 🚀");
+  res.send("Serveur PayDunya OK 🚀");
 });
 
-/* =========================
-   DELIVERY TEST
-========================= */
-app.post("/deliver", (req, res) => {
-  const { productId, email } = req.body;
-
-  res.json({
-    success: true,
-    message: "Commande reçue",
-    productId,
-    email
-  });
-});
-
-/* =========================
-   CREATE PAYMENT PAYDUNYA
-========================= */
+/* CREATE PAYMENT */
 app.post("/create-payment", async (req, res) => {
-  const { amount } = req.body;
+
+  const amount = Number(req.body.amount);
 
   if (!amount || amount <= 0) {
-    return res.json({
-      error: true,
-      message: "Montant invalide"
-    });
+    return res.json({ success: false, message: "Montant invalide" });
   }
 
   try {
+
     const response = await fetch(
       "https://app.paydunya.com/api/v1/checkout-invoice/create",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
-          "PAYDUNYA-PRIVATE-KEY": "test_private_MspMDfUtSsvO54UVz8H7NO90VR9",
-          "PAYDUNYA-TOKEN": "DTip2Kv4kRy9rtBpi7Bz"
+
+          "PAYDUNYA-MASTER-KEY": "TA_MASTER_KEY",
+          "PAYDUNYA-PRIVATE-KEY": "TA_PRIVATE_KEY",
+          "PAYDUNYA-TOKEN": "TA_TOKEN"
         },
         body: JSON.stringify({
           invoice: {
@@ -66,64 +51,57 @@ app.post("/create-payment", async (req, res) => {
     );
 
     const data = await response.json();
+
     console.log("PAYDUNYA RESPONSE:", data);
 
-    // 🔥 IMPORTANT: gérer tous les cas possibles
-    const paymentUrl =
-      data.response_text ||
-      data.invoice_url ||
-      data.url ||
+    const url =
+      data?.response_body?.invoice_url ||
+      data?.response_body?.redirect_url ||
+      data?.response_body?.url ||
+      data?.response_text ||
       null;
 
-    if (data.response_code === "00" && paymentUrl) {
+    if (!url) {
       return res.json({
-        success: true,
-        url: paymentUrl
+        success: false,
+        message: "Lien paiement introuvable",
+        debug: data
       });
     }
 
     return res.json({
-      success: false,
-      message: "Erreur PayDunya",
-      details: data
+      success: true,
+      url
     });
 
   } catch (err) {
     return res.json({
       success: false,
-      message: "Erreur serveur",
+      message: "Erreur serveur PayDunya",
       error: err.message
     });
   }
 });
 
-/* =========================
-   SUCCESS PAGE
-========================= */
+/* SUCCESS */
 app.get("/success", (req, res) => {
   res.send(`
     <h1 style="color:green;">✅ Paiement réussi</h1>
-    <p>Votre paiement a été effectué avec succès.</p>
-    <p>Contactez-nous sur WhatsApp pour recevoir votre produit.</p>
-    <a href="https://wa.me/message/HVCPBAQEWB5PD1">WhatsApp</a>
+    <a href="/">Retour site</a>
   `);
 });
 
-/* =========================
-   CANCEL PAGE
-========================= */
+/* CANCEL */
 app.get("/cancel", (req, res) => {
   res.send(`
-    <h1 style="color:red;">❌ Paiement échoué ou annulé</h1>
-    <a href="/">Retour au site</a>
+    <h1 style="color:red;">❌ Paiement annulé</h1>
+    <a href="/">Retour</a>
   `);
 });
 
-/* =========================
-   START
-========================= */
+/* START */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Serveur lancé sur port", PORT);
+  console.log("Serveur OK sur port", PORT);
 });
