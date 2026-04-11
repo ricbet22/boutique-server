@@ -1,14 +1,12 @@
 const express = require("express");
 const cors = require("cors");
+const fetch = require("node-fetch");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-const fetch = global.fetch;
-
-/* HOME */
 app.get("/", (req, res) => {
   res.send("Serveur PayDunya OK 🚀");
 });
@@ -30,8 +28,6 @@ app.post("/create-payment", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-
-          // 🔐 TES NOUVELLES CLÉS (APRÈS RESET)
           "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
           "PAYDUNYA-PRIVATE-KEY": "live_private_v5yajGIXmycMXPcInGW74WZJODD",
           "PAYDUNYA-TOKEN": "cghAMMjHpWPltNO7TlOZ"
@@ -39,7 +35,7 @@ app.post("/create-payment", async (req, res) => {
         body: JSON.stringify({
           invoice: {
             total_amount: amount,
-            description: "Achat produit RIC MARKET"
+            description: "Achat RIC MARKET"
           },
           store: {
             name: "RIC MARKET"
@@ -54,29 +50,37 @@ app.post("/create-payment", async (req, res) => {
 
     const data = await response.json();
 
+    console.log("PAYDUNYA:", data);
+
+    if (!response.ok) {
+      return res.json({
+        success: false,
+        message: data.response_text || "Erreur API PayDunya"
+      });
+    }
+
     const url =
       data?.response_body?.invoice_url ||
       data?.response_body?.redirect_url ||
-      data?.response_body?.url ||
       null;
 
     if (!url) {
       return res.json({
         success: false,
-        message: "Lien introuvable",
+        message: "Lien paiement non généré",
         debug: data
       });
     }
 
-    return res.json({
-      success: true,
-      url
-    });
+    res.json({ success: true, url });
 
   } catch (err) {
-    return res.json({
+
+    console.error("ERREUR:", err);
+
+    res.json({
       success: false,
-      message: "Erreur serveur PayDunya",
+      message: "Erreur serveur",
       error: err.message
     });
   }
@@ -84,17 +88,16 @@ app.post("/create-payment", async (req, res) => {
 
 /* SUCCESS */
 app.get("/success", (req, res) => {
-  res.send("Paiement réussi ✅");
+  res.send("✅ Paiement réussi");
 });
 
 /* CANCEL */
 app.get("/cancel", (req, res) => {
-  res.send("Paiement annulé ❌");
+  res.send("❌ Paiement annulé");
 });
 
-/* START */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Serveur OK sur port", PORT);
+  console.log("Serveur lancé sur", PORT);
 });
