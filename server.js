@@ -28,12 +28,25 @@ app.post("/create-payment", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+
+          // 🔑 CLÉS TEST
           "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
           "PAYDUNYA-PRIVATE-KEY": "test_private_MspMDfUtSsvO54UVz8H7NO90VR9",
-          "PAYDUNYA-TOKEN": "DTip2Kv4kRy9rtBpi7Bz"
+          "PAYDUNYA-TOKEN": "DTip2Kv4kRy9rtBpi7Bz",
+
+          // 🔥 IMPORTANT
+          "PAYDUNYA-MODE": "test"
         },
         body: JSON.stringify({
           invoice: {
+            items: [
+              {
+                name: "Produit RIC MARKET",
+                quantity: 1,
+                unit_price: amount,
+                total_price: amount
+              }
+            ],
             total_amount: amount,
             description: "Achat RIC MARKET"
           },
@@ -42,7 +55,8 @@ app.post("/create-payment", async (req, res) => {
           },
           actions: {
             return_url: "https://boutique-server-1-wz16.onrender.com/success",
-            cancel_url: "https://boutique-server-1-wz16.onrender.com/cancel"
+            cancel_url: "https://boutique-server-1-wz16.onrender.com/cancel",
+            callback_url: "https://boutique-server-1-wz16.onrender.com/callback"
           }
         })
       }
@@ -50,12 +64,16 @@ app.post("/create-payment", async (req, res) => {
 
     const data = await response.json();
 
-    console.log("PAYDUNYA:", data);
+    // ✅ LOG COMPLET (TRÈS IMPORTANT)
+    console.log("========== PAYDUNYA RESPONSE ==========");
+    console.log(JSON.stringify(data, null, 2));
+    console.log("======================================");
 
     if (!response.ok) {
       return res.json({
         success: false,
-        message: data.response_text || "Erreur API PayDunya"
+        message: data.response_text || "Erreur API PayDunya",
+        debug: data
       });
     }
 
@@ -76,7 +94,7 @@ app.post("/create-payment", async (req, res) => {
 
   } catch (err) {
 
-    console.error("ERREUR:", err);
+    console.error("ERREUR SERVEUR:", err);
 
     res.json({
       success: false,
@@ -84,6 +102,12 @@ app.post("/create-payment", async (req, res) => {
       error: err.message
     });
   }
+});
+
+/* CALLBACK */
+app.get("/callback", (req, res) => {
+  console.log("✅ Paiement confirmé (callback)");
+  res.send("OK");
 });
 
 /* SUCCESS */
