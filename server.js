@@ -31,8 +31,8 @@ app.post("/create-payment", async (req, res) => {
 
           // 🔑 CLÉS TEST
           "PAYDUNYA-MASTER-KEY": "XBaD1Tp1-tkLh-NJsZ-9hMs-KUftcQJaF0Uu",
-          "PAYDUNYA-PRIVATE-KEY": "test_private_MspMDfUtSsvO54UVz8H7NO90VR9",
-          "PAYDUNYA-TOKEN": "DTip2Kv4kRy9rtBpi7Bz",
+          "PAYDUNYA-PRIVATE-KEY": "test_private_gNQct9nCI7pnbrc729yrbycToXy",
+          "PAYDUNYA-TOKEN": "drEst4SJNfYkgGx3gRDx",
 
           // 🔥 IMPORTANT
           "PAYDUNYA-MODE": "test"
